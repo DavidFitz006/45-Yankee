@@ -6,7 +6,7 @@ import webbrowser
 sheet_url = "https://docs.google.com/spreadsheets/d/1JZsnrbtk2y4hUrdEFkS9-zhlkiFzOKGjcju0QbYd3Hw/export?format=csv&gid=1607918864"
 
 # Load the Google Sheet data into a pandas DataFrame
-@st.cache_data
+@st.cache_data(ttl=3600)
 def load_data(url):
     return pd.read_csv(url)
 
