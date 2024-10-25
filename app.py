@@ -15,22 +15,21 @@ df = load_data(sheet_url)
 # Streamlit App Title
 st.title("45 Yankee Attendance Report")
 
-# Initialize attendance_summary to None
+# Initialize attendance_summary and operations_count
 attendance_summary = None
 operations_count = None
 
-# Checking if required columns exist
+# Check if required columns exist in the data
 if 'Attendance:' in df.columns and 'Operation or training:' in df.columns:
     # Create a list to store attendance data
     attendance_data = []
 
     # Iterate through each row in the DataFrame
     for index, row in df.iterrows():
-        # Ensure the Attendance: column has a value before processing
+        # Ensure the Attendance column has a value before processing
         if pd.notna(row['Attendance:']):
-            # Split names separated by commas, remove any leading/trailing spaces
-            names = row['Attendance:'].split(',')
-            names = [name.strip() for name in names]  # Clean up whitespace
+            # Split names separated by commas and clean whitespace
+            names = [name.strip() for name in row['Attendance:'].split(',')]
             
             # Pair each name with its attendance type
             for name in names:
@@ -44,42 +43,39 @@ if 'Attendance:' in df.columns and 'Operation or training:' in df.columns:
     operation_attendance = attendance_df[attendance_df['Type'].str.contains("Operation", case=False, na=False)].groupby('Name').size().reset_index(name='Operation Attendance')
     training_attendance = attendance_df[attendance_df['Type'].str.contains("Training", case=False, na=False)].groupby('Name').size().reset_index(name='Training Attendance')
     
-    # Merge the attendance counts into a single DataFrame
-    attendance_summary = total_attendance.merge(operation_attendance, on='Name', how='left').merge(training_attendance, on='Name', how='left').fillna(0)
+    # Merge attendance counts into a single DataFrame
+    attendance_summary = (
+        total_attendance
+        .merge(operation_attendance, on='Name', how='left')
+        .merge(training_attendance, on='Name', how='left')
+        .fillna(0)
+    )
+    
+    # Convert attendance counts to integers
+    attendance_summary[['Operation Attendance', 'Training Attendance']] = attendance_summary[['Operation Attendance', 'Training Attendance']].astype(int)
     
     # Calculate percentages
-    attendance_summary['Operation Attendance'] = attendance_summary['Operation Attendance'].astype(int)
-    attendance_summary['Training Attendance'] = attendance_summary['Training Attendance'].astype(int)
-    
-    attendance_summary['Operation %'] = ((attendance_summary['Operation Attendance'] / attendance_summary['Total Attendance']) * 100).round(0)
-    attendance_summary['Training %'] = ((attendance_summary['Training Attendance'] / attendance_summary['Total Attendance']) * 100).round(0)
+    attendance_summary['Operation %'] = ((attendance_summary['Operation Attendance'] / attendance_summary['Total Attendance']) * 100).round(0).astype(int)
+    attendance_summary['Training %'] = ((attendance_summary['Training Attendance'] / attendance_summary['Total Attendance']) * 100).round(0).astype(int)
 
-    # Convert the percentages to integers
-    attendance_summary['Operation %'] = attendance_summary['Operation %'].astype(int)
-    attendance_summary['Training %'] = attendance_summary['Training %'].astype(int)
-
-    # Remove the Total Attendance column
+    # Select only the columns for display
     attendance_summary = attendance_summary[['Name', 'Operation %', 'Training %']]
 
-    # Create a second table for operations/training comparison
-    operation_count = df['Operation or training:'].nunique()  # Count of unique operations/trainings
-    name_counts = df['Attendance:'].str.split(',').explode().str.strip().value_counts()  # Count attendance for each name
+    # Create a summary table for overall attendance count
+    operation_count = df['Operation or training:'].nunique() + 1 # Count of unique operations/trainings                   may need to remove +1 later
+    name_counts = df['Attendance:'].str.split(',').explode().str.strip().value_counts()  # Attendance count per name
     
+    # Calculate the percentage attendance for each name
     operations_count = pd.DataFrame(name_counts).reset_index()
     operations_count.columns = ['Name', 'Attendance Count']
-    
-    # Calculate the percentage attendece
-    operations_count['Operations/Training %'] = (operations_count['Attendance Count'] / operation_count * 100).round(0)
+    operations_count['Total Attendance Percent'] = ((operations_count['Attendance Count'] / operation_count) * 100).round(0).astype(int)
 
-    # Convert percentages to integers
-    operations_count['Operations/Training %'] = operations_count['Operations/Training %'].astype(int)
-
-    # Display the Operations/Training comparison table
+    # Display the Total Attendance Percent table
     st.subheader("Total Attendance Percentage")
     st.table(operations_count)
 
     # Display the attendance percentage table
-    st.subheader("Operation to training ratio")
+    st.subheader("Operation to Training Ratio")
     st.table(attendance_summary)
 
 else:
@@ -89,3 +85,4 @@ else:
 if st.button("Fill out the Attendance Form"):
     # Open the Google Form in a new tab
     webbrowser.open_new_tab("https://docs.google.com/forms/d/e/1FAIpQLScdtQchZhAaH_Y6wDvgHCw2O_GTsOgfC97YK_Dn4i5cBGrTpg/viewform")
+
