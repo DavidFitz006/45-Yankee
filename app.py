@@ -62,7 +62,7 @@ if 'Attendance:' in df.columns and 'Operation or training:' in df.columns:
     attendance_summary = attendance_summary[['Name', 'Operation %', 'Training %']]
 
     # Create a summary table for overall attendance count
-    operation_count = df['Operation or training:'].nunique() + 3 # Count of unique operations/trainings                   may need to remove +2 later
+    operation_count = sheet['H1'].value
     name_counts = df['Attendance:'].str.split(',').explode().str.strip().value_counts()  # Attendance count per name
     
     # Calculate the percentage attendance for each name
