@@ -87,8 +87,3 @@ if 'Attendance:' in df.columns and 'Operation or training:' in df.columns:
 
 else:
     st.error("The required columns are not found in the data.")
-
-# Button to open Google Form
-if st.button("Fill out the Attendance Form"):
-    # Open the Google Form in a new tab
-    webbrowser.open_new_tab("https://docs.google.com/forms/d/e/1FAIpQLScdtQchZhAaH_Y6wDvgHCw2O_GTsOgfC97YK_Dn4i5cBGrTpg/viewform")
