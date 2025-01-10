@@ -61,14 +61,16 @@ if 'Attendance:' in df.columns and 'Operation or training:' in df.columns:
     # Select only the columns for display
     attendance_summary = attendance_summary[['Name', 'Operation %', 'Training %']]
 
-    # Create a summary table for overall attendance count
-    operation_count = operation_attendance['Operation Attendance'].max()
-    name_counts = df['Attendance:'].str.split(',').explode().str.strip().value_counts()  # Attendance count per name
-    
+    # Calculate the total number of unique operations/events
+    operation_count = attendance_df['Type'].nunique()
+
+    # Calculate the total attendance count per name
+    name_counts = df['Attendance:'].str.split(',').explode().str.strip().value_counts()
+
     # Calculate the percentage attendance for each name
     operations_count = pd.DataFrame(name_counts).reset_index()
     operations_count.columns = ['Name', 'Attendance Count']
-    operations_count['Total Attendance Percent'] = ((operations_count['Attendance Count'] / operation_count) * 100).astype(int)
+    operations_count['Total Attendance Percent'] = ((operations_count['Attendance Count'] / operation_count) * 100).round(0).astype(int) * 0.1
 
     # Display the Total Attendance Percent table
     st.subheader("Total Attendance Percentage")
@@ -85,4 +87,5 @@ else:
 if st.button("Fill out the Attendance Form"):
     # Open the Google Form in a new tab
     webbrowser.open_new_tab("https://docs.google.com/forms/d/e/1FAIpQLScdtQchZhAaH_Y6wDvgHCw2O_GTsOgfC97YK_Dn4i5cBGrTpg/viewform")
+
 
