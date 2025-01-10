@@ -68,7 +68,7 @@ if 'Attendance:' in df.columns and 'Operation or training:' in df.columns:
     # Calculate the percentage attendance for each name
     operations_count = pd.DataFrame(name_counts).reset_index()
     operations_count.columns = ['Name', 'Attendance Count']
-    operations_count['Total Attendance Percent'] = ((operations_count['Attendance Count'] / operation_count) * 100).round(0).astype(int)
+    operations_count['Total Attendance Percent'] = ((operations_count['Attendance Count'] / operation_count) * 100).round(0).astype(int) * 2
 
     # Display the Total Attendance Percent table
     st.subheader("Total Attendance Percentage")
